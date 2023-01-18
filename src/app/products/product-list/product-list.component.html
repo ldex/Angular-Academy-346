@@ -2,8 +2,16 @@
     {{ title }}
 </h2>
 
-<ul class="products">
-    <li *ngFor="let product of products"
+<div>
+    {{ productsNumber$ | async }} products
+</div>
+
+<ng-template #loading>
+    <h2 class="loading">Loading products</h2>
+</ng-template>
+
+<ul class="products" *ngIf="products$ | async as products;else loading">
+    <li *ngFor="let product of products | slice:start:end"
         [class.discontinued]="product.discontinued"
         [class.selected]="selectedProduct === product"
         (click)="onSelect(product)">
@@ -13,4 +21,16 @@
     </li>
 </ul>
 
-<app-product-detail [product]="selectedProduct"></app-product-detail>
+<div class="right">
+    <a routerLink="insert">Add new product...</a>
+</div>
+
+<div>
+    <button (click)="previousPage()" [disabled]="start === 0">
+        < Previous Page
+    </button>
+    Page {{ pageNumber }}
+    <button (click)="nextPage()" [disabled]="(productsNumber$ | async) <= end">
+        Next Page >
+    </button>
+</div>

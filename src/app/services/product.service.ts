@@ -1,11 +1,9 @@
 import { HttpClient } from '@angular/common/http';
 import { Injectable } from '@angular/core';
-import { Observable } from 'rxjs';
+import { delay, map, Observable, shareReplay, tap } from 'rxjs';
 import { Product } from '../models/product.interface';
 
-@Injectable({
-  providedIn: 'root'
-})
+@Injectable()
 export class ProductService {
 
   private baseUrl = 'https://storerestservice.azurewebsites.net/api/products/';
@@ -17,8 +15,33 @@ export class ProductService {
     this.initProducts();
   }
 
+  deleteProduct(id: number | undefined): Observable<any> {
+    return this.http.delete(this.baseUrl + id);
+  }
+
+  insertProduct(newProduct: Product): Observable<Product> {
+    return this.http.post<Product>(this.baseUrl, newProduct);
+  }
+
+  getProductById(id: number): Observable<Product | undefined> {
+    return this
+              .products$
+              .pipe(
+                map(products => products.find(product => product.id === id))
+              )
+  }
+
   initProducts() {
-    this.products$ = this.http.get<Product[]>(this.baseUrl);
+    let url:string = this.baseUrl + '?$orderby=ModifiedDate%20desc';
+
+    this.products$ = this
+                        .http
+                        .get<Product[]>(url)
+                        .pipe(
+                          delay(1500), // Pour la démo!
+                          tap(console.table),
+                          shareReplay()
+                        );
   }
 
 }
